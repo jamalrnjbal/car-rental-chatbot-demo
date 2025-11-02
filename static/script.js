@@ -26,32 +26,40 @@ function addMessage(content, isUser = false) {
     const messageContent = document.createElement('div');
     messageContent.className = 'message-content';
 
-    // Check for image URLs in the format [IMAGE:url]
-    const imageRegex = /\[IMAGE:(.*?)\]/g;
-    let processedContent = content;
-    const images = [];
+    // Process content line by line
+    const lines = content.split('\n');
 
-    // Extract images
-    let match;
-    while ((match = imageRegex.exec(content)) !== null) {
-        images.push(match[1]);
-        processedContent = processedContent.replace(match[0], '');
-    }
+    lines.forEach(line => {
+        const trimmedLine = line.trim();
 
-    // Add images first
-    images.forEach(imageUrl => {
-        const img = document.createElement('img');
-        img.src = imageUrl;
-        img.alt = 'Car image';
-        img.className = 'car-image';
-        messageContent.appendChild(img);
-    });
+        // Check for image URLs in the format [IMAGE:url]
+        const imageMatch = trimmedLine.match(/^\[IMAGE:(.*?)\]$/);
+        if (imageMatch) {
+            const img = document.createElement('img');
+            img.src = imageMatch[1];
+            img.alt = 'Car image';
+            img.className = 'car-image';
+            messageContent.appendChild(img);
+            return;
+        }
 
-    // Split content into paragraphs
-    const paragraphs = processedContent.split('\n').filter(p => p.trim());
-    paragraphs.forEach(paragraph => {
+        // Check for horizontal rule (---)
+        if (trimmedLine === '---') {
+            const hr = document.createElement('hr');
+            hr.className = 'car-separator';
+            messageContent.appendChild(hr);
+            return;
+        }
+
+        // Skip empty lines
+        if (!trimmedLine) return;
+
         const p = document.createElement('p');
-        p.textContent = paragraph;
+
+        // Handle bold text (**text**)
+        let processedLine = trimmedLine.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+
+        p.innerHTML = processedLine;
         messageContent.appendChild(p);
     });
 

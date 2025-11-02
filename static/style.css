@@ -152,8 +152,20 @@ body {
     max-width: 300px;
     height: auto;
     border-radius: 8px;
-    margin-bottom: 8px;
+    margin: 12px 0 8px 0;
     display: block;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.car-separator {
+    border: none;
+    border-top: 2px solid #e0e0e0;
+    margin: 16px 0;
+}
+
+.message-content strong {
+    font-weight: 600;
+    color: #075e54;
 }
 
 .timestamp {
