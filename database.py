@@ -15,9 +15,12 @@ def init_db():
     conn = get_connection()
     cursor = conn.cursor()
 
+    # Drop existing table to force fresh data with images
+    cursor.execute('DROP TABLE IF EXISTS cars')
+
     # Create cars table
     cursor.execute('''
-        CREATE TABLE IF NOT EXISTS cars (
+        CREATE TABLE cars (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             make TEXT NOT NULL,
             model TEXT NOT NULL,
@@ -35,11 +38,8 @@ def init_db():
         )
     ''')
 
-    # Check if we already have data
-    cursor.execute('SELECT COUNT(*) FROM cars')
-    count = cursor.fetchone()[0]
-
-    if count == 0:
+    # Always insert fresh data
+    if True:
         # Insert mock car inventory
         cars = [
             # Economy Cars
