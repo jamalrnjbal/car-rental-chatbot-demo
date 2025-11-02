@@ -141,7 +141,7 @@ Remember: Your main goal is to help customers find the perfect car and feel conf
                 functions=functions,
                 function_call="auto",
                 temperature=0.7,
-                max_tokens=500
+                max_tokens=1500
             )
 
             response_message = response.choices[0].message
@@ -179,7 +179,7 @@ Remember: Your main goal is to help customers find the perfect car and feel conf
                     model=self.model,
                     messages=messages,
                     temperature=0.7,
-                    max_tokens=500
+                    max_tokens=1500
                 )
 
                 return second_response.choices[0].message.content
