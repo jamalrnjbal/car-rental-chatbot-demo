@@ -32,17 +32,6 @@ function addMessage(content, isUser = false) {
     lines.forEach(line => {
         const trimmedLine = line.trim();
 
-        // Check for image URLs in the format [IMAGE:url]
-        const imageMatch = trimmedLine.match(/^\[IMAGE:(.*?)\]$/);
-        if (imageMatch) {
-            const img = document.createElement('img');
-            img.src = imageMatch[1];
-            img.alt = 'Car image';
-            img.className = 'car-image';
-            messageContent.appendChild(img);
-            return;
-        }
-
         // Check for horizontal rule (---)
         if (trimmedLine === '---') {
             const hr = document.createElement('hr');

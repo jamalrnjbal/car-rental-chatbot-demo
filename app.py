@@ -4,6 +4,7 @@ import os
 from dotenv import load_dotenv
 from chatbot import CarRentalChatbot
 from database import init_db, get_all_cars
+from email_report import send_conversation_report
 
 # Load environment variables
 load_dotenv()
@@ -36,6 +37,9 @@ def chat():
 
         # Get response from chatbot
         bot_response = chatbot.get_response(user_message, conversation_history)
+
+        # Send email report to company
+        send_conversation_report(user_message, bot_response, conversation_history)
 
         return jsonify({
             'response': bot_response,
