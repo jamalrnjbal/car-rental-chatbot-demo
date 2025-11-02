@@ -147,6 +147,15 @@ body {
     margin-bottom: 0;
 }
 
+.car-image {
+    width: 100%;
+    max-width: 300px;
+    height: auto;
+    border-radius: 8px;
+    margin-bottom: 8px;
+    display: block;
+}
+
 .timestamp {
     font-size: 11px;
     color: #667781;

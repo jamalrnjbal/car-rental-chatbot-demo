@@ -26,8 +26,29 @@ function addMessage(content, isUser = false) {
     const messageContent = document.createElement('div');
     messageContent.className = 'message-content';
 
+    // Check for image URLs in the format [IMAGE:url]
+    const imageRegex = /\[IMAGE:(.*?)\]/g;
+    let processedContent = content;
+    const images = [];
+
+    // Extract images
+    let match;
+    while ((match = imageRegex.exec(content)) !== null) {
+        images.push(match[1]);
+        processedContent = processedContent.replace(match[0], '');
+    }
+
+    // Add images first
+    images.forEach(imageUrl => {
+        const img = document.createElement('img');
+        img.src = imageUrl;
+        img.alt = 'Car image';
+        img.className = 'car-image';
+        messageContent.appendChild(img);
+    });
+
     // Split content into paragraphs
-    const paragraphs = content.split('\n').filter(p => p.trim());
+    const paragraphs = processedContent.split('\n').filter(p => p.trim());
     paragraphs.forEach(paragraph => {
         const p = document.createElement('p');
         p.textContent = paragraph;
