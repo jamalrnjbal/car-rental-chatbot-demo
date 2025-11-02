@@ -2,7 +2,7 @@ services:
   - type: web
     name: car-rental-chatbot
     runtime: python
-    buildCommand: rm -f car_rental.db && pip install -r requirements.txt && python database.py
+    buildCommand: pip install -r requirements.txt && python database.py && python migrate_images.py
     startCommand: gunicorn app:app
     envVars:
       - key: PYTHON_VERSION
