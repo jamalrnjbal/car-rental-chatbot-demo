@@ -46,19 +46,22 @@ def init_db():
             {
                 'make': 'Toyota', 'model': 'Corolla', 'year': 2024, 'category': 'Economy',
                 'daily_price': 35.00, 'passengers': 5, 'luggage': 2, 'transmission': 'Automatic',
-                'fuel_type': 'Gasoline', 'features': json.dumps(['Air Conditioning', 'Bluetooth', 'Backup Camera'])'image_url': 'https://via.placeholder.com/400x250/4A90E2/FFFFFF?text=Toyota+Corolla+2024',
+                'fuel_type': 'Gasoline', 'features': json.dumps(['Air Conditioning', 'Bluetooth', 'Backup Camera']),
+                'image_url': 'https://via.placeholder.com/400x250/4A90E2/FFFFFF?text=Toyota+Corolla+2024',
                 'available': 1
             },
             {
                 'make': 'Honda', 'model': 'Civic', 'year': 2024, 'category': 'Economy',
                 'daily_price': 38.00, 'passengers': 5, 'luggage': 2, 'transmission': 'Automatic',
-                'fuel_type': 'Gasoline', 'features': json.dumps(['Air Conditioning', 'Bluetooth', 'Lane Assist'])'image_url': 'https://via.placeholder.com/400x250/5C6BC0/FFFFFF?text=Honda+Civic+2024',
+                'fuel_type': 'Gasoline', 'features': json.dumps(['Air Conditioning', 'Bluetooth', 'Lane Assist']),
+                'image_url': 'https://via.placeholder.com/400x250/5C6BC0/FFFFFF?text=Honda+Civic+2024',
                 'available': 1
             },
             {
                 'make': 'Hyundai', 'model': 'Elantra', 'year': 2023, 'category': 'Economy',
                 'daily_price': 33.00, 'passengers': 5, 'luggage': 2, 'transmission': 'Automatic',
-                'fuel_type': 'Gasoline', 'features': json.dumps(['Air Conditioning', 'Bluetooth'])'image_url': 'https://via.placeholder.com/400x250/42A5F5/FFFFFF?text=Hyundai+Elantra+2023',
+                'fuel_type': 'Gasoline', 'features': json.dumps(['Air Conditioning', 'Bluetooth']),
+                'image_url': 'https://via.placeholder.com/400x250/42A5F5/FFFFFF?text=Hyundai+Elantra+2023',
                 'available': 1
             },
 
