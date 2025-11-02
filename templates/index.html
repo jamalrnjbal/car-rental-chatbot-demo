@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CarRent AI - Your Car Rental Assistant</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="phone-container">
+        <!-- WhatsApp-style header -->
+        <div class="chat-header">
+            <div class="header-content">
+                <div class="profile-pic">
+                    <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+                        <circle cx="20" cy="20" r="20" fill="#25D366"/>
+                        <path d="M28 16.5C28 14.29 26.21 12.5 24 12.5H16C13.79 12.5 12 14.29 12 16.5V23.5C12 25.71 13.79 27.5 16 27.5H24C26.21 27.5 28 25.71 28 23.5V16.5Z" fill="white"/>
+                        <circle cx="17" cy="18.5" r="1.5" fill="#25D366"/>
+                        <circle cx="23" cy="18.5" r="1.5" fill="#25D366"/>
+                        <path d="M17 22.5C17 22.5 18.5 24 20 24C21.5 24 23 22.5 23 22.5" stroke="#25D366" stroke-width="1.5" stroke-linecap="round"/>
+                    </svg>
+                </div>
+                <div class="header-info">
+                    <h1>CarRent AI Assistant</h1>
+                    <p class="status">Online</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chat messages area -->
+        <div class="chat-messages" id="chatMessages">
+            <div class="message bot-message">
+                <div class="message-content">
+                    <p>Hello! 👋 Welcome to CarRent! I'm here to help you find the perfect rental car for your needs.</p>
+                    <p>Whether you're looking for a budget-friendly ride, a spacious SUV for the family, or something luxurious for a special occasion - I've got you covered!</p>
+                    <p>What kind of car are you looking for today?</p>
+                    <span class="timestamp">Just now</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Input area -->
+        <div class="chat-input-container">
+            <form id="chatForm">
+                <input
+                    type="text"
+                    id="messageInput"
+                    placeholder="Type a message..."
+                    autocomplete="off"
+                    required
+                />
+                <button type="submit" id="sendButton">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                        <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" fill="currentColor"/>
+                    </svg>
+                </button>
+            </form>
+        </div>
+
+        <!-- Typing indicator -->
+        <div class="typing-indicator" id="typingIndicator" style="display: none;">
+            <div class="message bot-message">
+                <div class="message-content">
+                    <div class="typing-dots">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
