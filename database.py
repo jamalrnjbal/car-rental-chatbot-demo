@@ -34,6 +34,15 @@ def init_db():
         )
     ''')
 
+    # Create conversations table for WhatsApp chat history
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS conversations (
+            phone_number TEXT PRIMARY KEY,
+            history TEXT NOT NULL,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    ''')
+
     # Check if we already have data
     cursor.execute('SELECT COUNT(*) FROM cars')
     count = cursor.fetchone()[0]
@@ -239,6 +248,42 @@ def search_cars(criteria):
         cars.append(car)
 
     return cars
+
+def get_user_conversation(phone_number):
+    """Get conversation history for a WhatsApp user"""
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute('SELECT history FROM conversations WHERE phone_number = ?', (phone_number,))
+    row = cursor.fetchone()
+    conn.close()
+
+    if row:
+        return json.loads(row['history'])
+    return []
+
+def save_user_conversation(phone_number, user_msg, bot_msg):
+    """Save conversation history for a WhatsApp user"""
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    # Get existing history
+    history = get_user_conversation(phone_number)
+
+    # Add new messages
+    history.append({"role": "user", "content": user_msg})
+    history.append({"role": "assistant", "content": bot_msg})
+
+    # Keep only last 20 messages to avoid token limits
+    history = history[-20:]
+
+    # Save to database
+    cursor.execute('''
+        INSERT OR REPLACE INTO conversations (phone_number, history, updated_at)
+        VALUES (?, ?, CURRENT_TIMESTAMP)
+    ''', (phone_number, json.dumps(history)))
+
+    conn.commit()
+    conn.close()
 
 if __name__ == '__main__':
     # Initialize database when run directly

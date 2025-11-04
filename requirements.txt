@@ -20,3 +20,6 @@ requests==2.31.0
 
 # Production server
 gunicorn==21.2.0
+
+# WhatsApp/SMS integration
+twilio==9.0.4

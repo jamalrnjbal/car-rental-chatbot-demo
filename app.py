@@ -3,7 +3,8 @@ from flask_cors import CORS
 import os
 from dotenv import load_dotenv
 from chatbot import CarRentalChatbot
-from database import init_db, get_all_cars
+from database import init_db, get_all_cars, get_user_conversation, save_user_conversation
+from twilio.twiml.messaging_response import MessagingResponse
 
 # Load environment variables
 load_dotenv()
@@ -62,6 +63,40 @@ def get_cars():
             'error': str(e),
             'success': False
         }), 500
+
+@app.route('/whatsapp', methods=['POST'])
+def whatsapp_webhook():
+    """Handle incoming WhatsApp messages from Twilio"""
+    try:
+        # Get incoming WhatsApp message from Twilio
+        incoming_msg = request.values.get('Body', '').strip()
+        sender_number = request.values.get('From', '')  # Format: whatsapp:+1234567890
+
+        if not incoming_msg:
+            resp = MessagingResponse()
+            resp.message("I didn't receive a message. Please try again!")
+            return str(resp)
+
+        # Retrieve conversation history for this user
+        conversation_history = get_user_conversation(sender_number)
+
+        # Get chatbot response (reuse existing chatbot logic)
+        bot_response = chatbot.get_response(incoming_msg, conversation_history)
+
+        # Save conversation state
+        save_user_conversation(sender_number, incoming_msg, bot_response)
+
+        # Create Twilio response
+        resp = MessagingResponse()
+        resp.message(bot_response)
+
+        return str(resp)
+
+    except Exception as e:
+        print(f"Error in WhatsApp webhook: {e}")
+        resp = MessagingResponse()
+        resp.message("Sorry, I'm having trouble right now. Please try again in a moment!")
+        return str(resp)
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)
