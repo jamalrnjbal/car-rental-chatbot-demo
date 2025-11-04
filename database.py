@@ -29,6 +29,7 @@ def init_db():
             transmission TEXT NOT NULL,
             fuel_type TEXT NOT NULL,
             features TEXT NOT NULL,
+            image_url TEXT,
             available BOOLEAN DEFAULT 1,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
@@ -55,6 +56,7 @@ def init_db():
                 'make': 'Toyota', 'model': 'Corolla', 'year': 2024, 'category': 'Economy',
                 'daily_price': 35.00, 'passengers': 5, 'luggage': 2, 'transmission': 'Automatic',
                 'fuel_type': 'Gasoline', 'features': json.dumps(['Air Conditioning', 'Bluetooth', 'Backup Camera']),
+                'image_url': 'https://images.unsplash.com/photo-1621007947382-bb3c3994e3fb?w=800',
                 'available': 1
             },
             {
@@ -184,12 +186,12 @@ def init_db():
         for car in cars:
             cursor.execute('''
                 INSERT INTO cars (make, model, year, category, daily_price, passengers,
-                                luggage, transmission, fuel_type, features, available)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                                luggage, transmission, fuel_type, features, image_url, available)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ''', (
                 car['make'], car['model'], car['year'], car['category'], car['daily_price'],
                 car['passengers'], car['luggage'], car['transmission'], car['fuel_type'],
-                car['features'], car['available']
+                car['features'], car.get('image_url'), car['available']
             ))
 
         conn.commit()

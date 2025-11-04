@@ -91,12 +91,24 @@ def whatsapp_webhook():
         # Save conversation state
         save_user_conversation(sender_number, incoming_msg, bot_response)
 
-        # Create Twilio response - this automatically replies to the sender
+        # Create Twilio response
         resp = MessagingResponse()
-        resp.message(bot_response)
+
+        # Check if bot response mentions specific cars and try to send images
+        image_urls = extract_car_images_from_response(incoming_msg, conversation_history)
+
+        if image_urls:
+            # Send images with the response
+            msg = resp.message(bot_response)
+            for url in image_urls[:3]:  # Limit to 3 images to avoid spam
+                msg.media(url)
+            print(f"Sending {len(image_urls)} images")
+        else:
+            # No images, just send text
+            resp.message(bot_response)
 
         twiml_response = str(resp)
-        print(f"TwiML Response: {twiml_response}")
+        print(f"TwiML Response: {twiml_response[:200]}...")
 
         return twiml_response
 
@@ -107,6 +119,35 @@ def whatsapp_webhook():
         resp = MessagingResponse()
         resp.message("Sorry, I'm having trouble right now. Please try again in a moment!")
         return str(resp)
+
+def extract_car_images_from_response(user_msg, conversation_history):
+    """
+    Extract car image URLs when the bot recommends cars.
+    This checks if the conversation involves car recommendations and fetches images.
+    """
+    from database import search_cars, get_all_cars
+
+    # Keywords that suggest user is looking for cars
+    car_keywords = ['car', 'vehicle', 'rental', 'need', 'looking', 'trip', 'family', 'luxury', 'suv', 'sedan']
+
+    if not any(keyword in user_msg.lower() for keyword in car_keywords):
+        return []
+
+    # Try to get relevant cars based on recent conversation
+    try:
+        # Simple heuristic: get a few cars from popular categories
+        cars = get_all_cars()
+
+        # Return up to 3 car images
+        images = []
+        for car in cars[:3]:
+            if car.get('image_url'):
+                images.append(car['image_url'])
+
+        return images
+    except Exception as e:
+        print(f"Error extracting car images: {e}")
+        return []
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)
