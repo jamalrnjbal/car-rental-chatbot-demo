@@ -72,6 +72,9 @@ def whatsapp_webhook():
         incoming_msg = request.values.get('Body', '').strip()
         sender_number = request.values.get('From', '')  # Format: whatsapp:+1234567890
 
+        # Debug logging
+        print(f"Received message from {sender_number}: {incoming_msg}")
+
         if not incoming_msg:
             resp = MessagingResponse()
             resp.message("I didn't receive a message. Please try again!")
@@ -79,21 +82,28 @@ def whatsapp_webhook():
 
         # Retrieve conversation history for this user
         conversation_history = get_user_conversation(sender_number)
+        print(f"Retrieved conversation history: {len(conversation_history)} messages")
 
         # Get chatbot response (reuse existing chatbot logic)
         bot_response = chatbot.get_response(incoming_msg, conversation_history)
+        print(f"Generated response: {bot_response[:100]}...")
 
         # Save conversation state
         save_user_conversation(sender_number, incoming_msg, bot_response)
 
-        # Create Twilio response
+        # Create Twilio response - this automatically replies to the sender
         resp = MessagingResponse()
         resp.message(bot_response)
 
-        return str(resp)
+        twiml_response = str(resp)
+        print(f"TwiML Response: {twiml_response}")
+
+        return twiml_response
 
     except Exception as e:
         print(f"Error in WhatsApp webhook: {e}")
+        import traceback
+        traceback.print_exc()
         resp = MessagingResponse()
         resp.message("Sorry, I'm having trouble right now. Please try again in a moment!")
         return str(resp)

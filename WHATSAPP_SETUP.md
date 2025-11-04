@@ -45,7 +45,7 @@ The sandbox lets you test WhatsApp integration **immediately** without approval.
    ```
    TWILIO_ACCOUNT_SID = AC... (your value)
    TWILIO_AUTH_TOKEN = ... (your value)
-   TWILIO_WHATSAPP_NUMBER = whatsapp:+14155238886
+   TWILIO_WHATSAPP_NUMBER = whatsapp:+15558251351
    ```
 4. Click **Save Changes**
 
@@ -55,7 +55,7 @@ Update your `.env` file:
 ```env
 TWILIO_ACCOUNT_SID=AC... (your value)
 TWILIO_AUTH_TOKEN=... (your value)
-TWILIO_WHATSAPP_NUMBER=whatsapp:+14155238886
+TWILIO_WHATSAPP_NUMBER=whatsapp:+15558251351
 ```
 
 **IMPORTANT:** Never commit `.env` to git - it contains secrets!
@@ -66,7 +66,7 @@ This tells Twilio where to send incoming WhatsApp messages.
 
 #### For Render (Production - Easiest):
 
-1. Your webhook URL is: `https://your-app-name.onrender.com/whatsapp`
+1. Your webhook URL is: `https://car-rental-chatbot-demo.onrender.com/whatsapp`
 2. In Twilio Console, go to **Messaging** → **Try it out** → **Send a WhatsApp message**
 3. Scroll down to **Sandbox Configuration**
 4. Under "WHEN A MESSAGE COMES IN", paste your webhook URL
