@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git push)",
+      "Bash(python test_voice_feature.py:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
