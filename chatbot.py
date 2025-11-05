@@ -1,16 +1,20 @@
 import os
 from openai import OpenAI
+import instructor
 from database import get_all_cars, search_cars
+from models import ChatbotAction, CarSearchCriteria, GetCarInventory
 import json
 
 class CarRentalChatbot:
     def __init__(self):
-        """Initialize the chatbot with OpenAI"""
+        """Initialize the chatbot with Instructor-patched OpenAI client"""
         api_key = os.getenv('OPENAI_API_KEY')
         if not api_key:
             raise ValueError("OPENAI_API_KEY not found in environment variables")
 
-        self.client = OpenAI(api_key=api_key)
+        # Keep both regular and Instructor-patched clients
+        self.openai_client = OpenAI(api_key=api_key)
+        self.client = instructor.from_openai(OpenAI(api_key=api_key))
         self.model = "gpt-4"
 
         # System prompt for the chatbot
@@ -50,10 +54,15 @@ Luxury sedan with leather seats and premium sound
 
 Chat naturally. Be helpful but chill. Don't overthink it.
 
-You can search the inventory using get_car_inventory (all cars) or search_cars (filter by price, passengers, category, fuel type)."""
+You have access to two tools:
+1. search_cars - Filter cars by price, passenger count, category, or fuel type
+2. get_inventory - Get all available cars
+
+Use search_cars when customers have specific requirements. Use get_inventory when they want to browse everything.
+For simple questions or greetings, just respond directly without using tools."""
 
     def get_response(self, user_message, conversation_history=None):
-        """Get a response from the chatbot"""
+        """Get a response from the chatbot using Instructor for structured outputs"""
         if conversation_history is None:
             conversation_history = []
 
@@ -67,103 +76,72 @@ You can search the inventory using get_car_inventory (all cars) or search_cars (
         # Add current user message
         messages.append({"role": "user", "content": user_message})
 
-        # Define functions for the AI to use
-        functions = [
-            {
-                "name": "get_car_inventory",
-                "description": "Get the complete list of available rental cars with all details including make, model, price, capacity, and features",
-                "parameters": {
-                    "type": "object",
-                    "properties": {},
-                    "required": []
-                }
-            },
-            {
-                "name": "search_cars",
-                "description": "Search for cars that match specific criteria like budget, passenger count, category, or fuel type",
-                "parameters": {
-                    "type": "object",
-                    "properties": {
-                        "max_price": {
-                            "type": "number",
-                            "description": "Maximum daily price in dollars"
-                        },
-                        "min_passengers": {
-                            "type": "integer",
-                            "description": "Minimum number of passengers the car should accommodate"
-                        },
-                        "category": {
-                            "type": "string",
-                            "description": "Car category",
-                            "enum": ["Economy", "Compact SUV", "Mid-Size SUV", "Full-Size SUV", "Luxury", "Minivan", "Electric", "Pickup Truck", "Sports"]
-                        },
-                        "fuel_type": {
-                            "type": "string",
-                            "description": "Type of fuel",
-                            "enum": ["Gasoline", "Hybrid", "Electric"]
-                        }
-                    }
-                }
-            }
-        ]
-
         try:
-            # Call OpenAI API with function calling
-            response = self.client.chat.completions.create(
+            # Use Instructor to get structured output
+            action: ChatbotAction = self.client.chat.completions.create(
                 model=self.model,
+                response_model=ChatbotAction,
                 messages=messages,
-                functions=functions,
-                function_call="auto",
                 temperature=0.7,
                 max_tokens=1500
             )
 
-            response_message = response.choices[0].message
+            # Handle different action types
+            if action.action_type == "search_cars" and action.search_criteria:
+                # Convert Pydantic model to dict, excluding None values
+                criteria = action.search_criteria.model_dump(exclude_none=True)
+                cars = search_cars(criteria)
 
-            # Check if the model wants to call a function
-            if response_message.function_call:
-                # Execute the function
-                function_name = response_message.function_call.name
-                function_args = json.loads(response_message.function_call.arguments)
+                # Format car results for the final response
+                car_data = json.dumps(cars)
 
-                if function_name == "get_car_inventory":
-                    function_response = get_all_cars()
-                elif function_name == "search_cars":
-                    function_response = search_cars(function_args)
-                else:
-                    function_response = {"error": "Unknown function"}
+                # Get natural language response with the car data
+                final_messages = messages + [
+                    {"role": "assistant", "content": f"[Searching cars with criteria: {criteria}]"},
+                    {"role": "user", "content": f"Here are the matching cars: {car_data}. Please present these to the customer naturally."}
+                ]
 
-                # Add function call and response to messages
-                messages.append({
-                    "role": "assistant",
-                    "content": None,
-                    "function_call": {
-                        "name": function_name,
-                        "arguments": response_message.function_call.arguments
-                    }
-                })
-                messages.append({
-                    "role": "function",
-                    "name": function_name,
-                    "content": json.dumps(function_response)
-                })
-
-                # Get final response from the model
-                second_response = self.client.chat.completions.create(
+                final_response = self.openai_client.chat.completions.create(
                     model=self.model,
-                    messages=messages,
+                    messages=final_messages,
                     temperature=0.7,
                     max_tokens=1500
                 )
 
-                return second_response.choices[0].message.content
+                return final_response.choices[0].message.content
+
+            elif action.action_type == "get_inventory":
+                # Get all cars
+                cars = get_all_cars()
+                car_data = json.dumps(cars)
+
+                # Get natural language response with all cars
+                final_messages = messages + [
+                    {"role": "assistant", "content": "[Retrieving all available cars]"},
+                    {"role": "user", "content": f"Here are all available cars: {car_data}. Please present 2-3 good options to the customer naturally."}
+                ]
+
+                final_response = self.openai_client.chat.completions.create(
+                    model=self.model,
+                    messages=final_messages,
+                    temperature=0.7,
+                    max_tokens=1500
+                )
+
+                return final_response.choices[0].message.content
+
+            elif action.action_type == "direct_response" and action.response:
+                # Direct response without function calling
+                return action.response
 
             else:
-                # No function call, return direct response
-                return response_message.content
+                # Fallback for unexpected cases
+                return "I'm here to help you find a rental car! What kind of car are you looking for?"
 
         except Exception as e:
             print(f"Error getting response: {e}")
+            import traceback
+            traceback.print_exc()
             return "I apologize, but I'm having trouble processing your request right now. Could you please try again?"
 
     def format_car_info(self, car):
