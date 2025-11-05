@@ -95,14 +95,14 @@ def whatsapp_webhook():
         resp = MessagingResponse()
 
         # Check if bot response mentions specific cars and try to send images
-        image_urls = extract_car_images_from_response(incoming_msg, conversation_history)
+        image_urls = extract_car_images_from_response(bot_response, incoming_msg, conversation_history)
 
         if image_urls:
             # Send images with the response
             msg = resp.message(bot_response)
             for url in image_urls[:3]:  # Limit to 3 images to avoid spam
                 msg.media(url)
-            print(f"Sending {len(image_urls)} images")
+            print(f"Sending {len(image_urls)} images: {image_urls}")
         else:
             # No images, just send text
             resp.message(bot_response)
@@ -120,33 +120,42 @@ def whatsapp_webhook():
         resp.message("Sorry, I'm having trouble right now. Please try again in a moment!")
         return str(resp)
 
-def extract_car_images_from_response(user_msg, conversation_history):
+def extract_car_images_from_response(bot_response, user_msg, conversation_history):
     """
-    Extract car image URLs when the bot recommends cars.
-    This checks if the conversation involves car recommendations and fetches images.
+    Extract car image URLs ONLY when the bot actually recommends specific cars.
+    Parse the bot's response to find car names and return their images.
     """
-    from database import search_cars, get_all_cars
+    from database import get_all_cars
+    import re
 
-    # Keywords that suggest user is looking for cars
-    car_keywords = ['car', 'vehicle', 'rental', 'need', 'looking', 'trip', 'family', 'luxury', 'suv', 'sedan']
-
-    if not any(keyword in user_msg.lower() for keyword in car_keywords):
+    # Only send images if the bot response contains car listings (has "AED" pricing)
+    if "AED" not in bot_response or "/day" not in bot_response:
+        print("No car listings detected in response (no AED pricing)")
         return []
 
-    # Try to get relevant cars based on recent conversation
     try:
-        # Simple heuristic: get a few cars from popular categories
-        cars = get_all_cars()
+        # Get all cars from database
+        all_cars = get_all_cars()
 
-        # Return up to 3 car images
-        images = []
-        for car in cars[:3]:
-            if car.get('image_url'):
-                images.append(car['image_url'])
+        # Extract car names mentioned in the bot response
+        # Look for patterns like "**2024 Toyota Corolla**" or "Toyota Corolla"
+        mentioned_images = []
 
-        return images
+        for car in all_cars:
+            car_name = f"{car['make']} {car['model']}"
+            # Check if this car is mentioned in the response
+            if car_name in bot_response:
+                if car.get('image_url'):
+                    mentioned_images.append(car['image_url'])
+                    print(f"Adding image for {car_name}")
+
+        # Limit to 3 images max
+        return mentioned_images[:3]
+
     except Exception as e:
         print(f"Error extracting car images: {e}")
+        import traceback
+        traceback.print_exc()
         return []
 
 if __name__ == '__main__':
